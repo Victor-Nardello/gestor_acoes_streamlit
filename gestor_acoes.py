@@ -165,9 +165,11 @@ with col1:
         nome_acao = st.text_input("Nome da Ação")
         data_acao = st.text_input("Data da Ação (YYYY-MM-DD)")
         local_acao = st.text_input("Local da Ação")
+        bairro_cidade = st.text_input("Bairro ou Cidade")
+        cartinhas_distribuidas = st.number_input("Cartinhas Distribuídas", min_value=0, step=1)
         submitted = st.form_submit_button("➕ Adicionar Ação")
         if submitted:
-            if not nome_acao or not data_acao or not local_acao:
+            if not nome_acao or not data_acao or not local_acao or not bairro_cidade:
                 st.error("Preencha todos os campos da ação.")
             else:
                 try:
@@ -177,6 +179,8 @@ with col1:
                         "nome_acao": nome_acao,
                         "data_acao": data_acao,
                         "local_acao": local_acao,
+                        "bairro_cidade": bairro_cidade,
+                        "cartinhas_distribuidas": int(cartinhas_distribuidas),
                         "visitantes": []
                     }
                     lista_de_acoes.append(nova_acao)
@@ -192,6 +196,8 @@ with col2:
             "Nome": a["nome_acao"],
             "Data": a["data_acao"],
             "Local": a["local_acao"],
+            "Bairro/Cidade": a.get("bairro_cidade", "Não informado"),
+            "Cartinhas": a.get("cartinhas_distribuidas", 0),
             "Visitantes": len(a.get("visitantes", []))
         } for a in lista_de_acoes]).sort_values("Data", ascending=False)
         st.dataframe(df_acoes, use_container_width=True)
@@ -261,12 +267,14 @@ if lista_de_acoes:
         1 for a in lista_de_acoes for v in a.get("visitantes", [])
         if v["status_contrato"] != "nenhum_contrato"
     )
+    total_cartinhas = sum(a.get("cartinhas_distribuidas", 0) for a in lista_de_acoes)
     taxa_conversao = (total_contratos / total_visitantes * 100) if total_visitantes else 0
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total de Visitantes", total_visitantes)
     col2.metric("Total de Contratos Fechados", total_contratos)
-    col3.metric("Taxa de Conversão (%)", f"{taxa_conversao:.1f}")
+    col3.metric("Total de Cartinhas Distribuídas", total_cartinhas)
+    col4.metric("Taxa de Conversão (%)", f"{taxa_conversao:.1f}")
 
     acoes_sem_visitantes = [a for a in lista_de_acoes if not a.get("visitantes")]
     visitantes_sem_contrato = [
@@ -290,6 +298,8 @@ if st.button("💾 Exportar CSV"):
                 "Ação": a["nome_acao"],
                 "Data": a["data_acao"],
                 "Local": a["local_acao"],
+                "Bairro/Cidade": a.get("bairro_cidade", "Não informado"),
+                "Cartinhas Distribuídas": a.get("cartinhas_distribuidas", 0),
                 "Equipe": v["equipe_responsavel"],
                 "Origem": v["origem_visitante"],
                 "Qtd Pessoas": v["quantidade_pessoas"],
