@@ -1,4 +1,3 @@
-# gestor_acoes_streamlit_dark.py
 import json
 import os
 import uuid
@@ -49,23 +48,67 @@ st.markdown(
         color: #FFFFFF;
     }
 
+    /* Rótulos dos campos de entrada */
+    label, .stTextInput label, .stNumberInput label, .stTextArea label, .stSelectbox label {
+        color: #FFFFFF !important;
+        font-weight: normal;
+    }
+
+    /* Inputs e text areas */
+    div.stTextInput > div > input,
+    div.stNumberInput > div > input,
+    div.stTextArea > div > textarea,
+    div.stSelectbox > div > div > div > select {
+        background-color: #333333;
+        color: #FFFFFF;
+        border: 1px solid #FF0000;
+    }
+
+    /* Placeholders */
+    div.stTextInput > div > input::placeholder,
+    div.stNumberInput > div > input::placeholder,
+    div.stTextArea > div > textarea::placeholder {
+        color: #BBBBBB;
+        opacity: 1;
+    }
+
     /* Botões */
     div.stButton > button {
         background-color: #FF0000;
         color: #FFFFFF;
         border: none;
+        border-radius: 4px;
     }
 
-    /* Inputs e text areas */
-    div.stTextInput>div>input, div.stNumberInput>div>input, div.stTextArea>div>textarea, div.stSelectbox>div>div>div>select {
-        background-color: #FFFFFF;
-        color: #FFFFFF;
-        border: 1px solid #FF0000;
+    /* Hover nos botões */
+    div.stButton > button:hover {
+        background-color: #CC0000;
     }
 
     /* Dataframes */
     .stDataFrame div.row-widget.stDataFrameWidget {
         background-color: #111111;
+        color: #FFFFFF;
+    }
+
+    /* Estilizar bordas e texto do dataframe */
+    .stDataFrame table {
+        border-collapse: collapse;
+    }
+    .stDataFrame th, .stDataFrame td {
+        border: 1px solid #FFFFFF;
+        color: #FFFFFF;
+    }
+
+    /* Estilizar selectbox para consistência */
+    .stSelectbox > div > div > div > select {
+        background-color: #333333;
+        color: #FFFFFF;
+    }
+
+    /* Estilizar opções do selectbox */
+    .stSelectbox option {
+        background-color: #333333;
         color: #FFFFFF;
     }
     </style>
