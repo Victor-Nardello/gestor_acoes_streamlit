@@ -37,7 +37,7 @@ st.markdown(
     <style>
     /* Background geral da página */
     .stApp {
-        background-color: #000000;
+        background-color: #FFFFFF;
         color: #FFFFFF;
         font-family: 'Arial', sans-serif;
     }
@@ -62,7 +62,7 @@ st.markdown(
     div.stTextArea > div > textarea,
     div.stSelectbox > div > div > div > select {
         background-color: #1A1A1A;
-        color: #FFFFFF;
+        color: #000000;
         border: 2px solid #FF0000;
         border-radius: 5px;
         padding: 8px;
