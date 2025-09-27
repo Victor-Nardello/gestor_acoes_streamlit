@@ -58,7 +58,7 @@ st.markdown(
 
     /* Inputs e text areas */
     div.stTextInput>div>input, div.stNumberInput>div>input, div.stTextArea>div>textarea, div.stSelectbox>div>div>div>select {
-        background-color: #111111;
+        background-color: #FFFFFF;
         color: #FFFFFF;
         border: 1px solid #FF0000;
     }
