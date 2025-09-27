@@ -38,25 +38,41 @@ st.set_page_config(page_title="Gestor de Ações de Rua", layout="wide", page_ic
 st.markdown(
     """
     <style>
-    body {
+    /* Background geral da página */
+    .stApp {
         background-color: #000000;
-        color: #ffffff;
+        color: #FFFFFF;
     }
-    .stButton>button {
-        background-color: #ff0000;
-        color: #ffffff;
-        border-radius: 5px;
+
+    /* Cabeçalhos e títulos */
+    h1, h2, h3, h4, h5, h6 {
+        color: #FFFFFF;
+    }
+
+    /* Botões */
+    div.stButton > button {
+        background-color: #FF0000;
+        color: #FFFFFF;
         border: none;
-        padding: 0.5em 1em;
     }
-    .stDataFrame table {
-        background-color: #000000;
-        color: #ffffff;
+
+    /* Inputs e text areas */
+    div.stTextInput>div>input, div.stNumberInput>div>input, div.stTextArea>div>textarea, div.stSelectbox>div>div>div>select {
+        background-color: #111111;
+        color: #FFFFFF;
+        border: 1px solid #FF0000;
+    }
+
+    /* Dataframes */
+    .stDataFrame div.row-widget.stDataFrameWidget {
+        background-color: #111111;
+        color: #FFFFFF;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 st.title("🏡 Gestor de Ações de Rua - Imobiliária")
 
 lista_de_acoes = carregar_dados()
