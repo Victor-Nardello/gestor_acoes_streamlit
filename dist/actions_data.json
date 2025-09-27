@@ -1,0 +1,19 @@
+[
+  {
+    "acao_id": "4a25fac5-0f44-43c2-9fa5-dbcb0b5e2bb6",
+    "nome_acao": "Estacionamento do DG",
+    "data_acao": "20-09-2025",
+    "local_acao": "Campo Grande",
+    "visitantes": [
+      {
+        "visitante_id": "e48a2adc-3d83-451a-b4a9-0d453220f096",
+        "data_hora_registro": "2025-09-23T17:52:19",
+        "equipe_responsavel": "Imobiliária Agora eu Mudo",
+        "origem_visitante": "Viu a ação e veio ver",
+        "quantidade_pessoas": 1,
+        "observacoes_visitante": "Cliente assinou contrato no dia 21/09/2025 após ver ação no estacionamento e e interessar pelo produto",
+        "status_contrato": "contrato_por_acao"
+      }
+    ]
+  }
+]

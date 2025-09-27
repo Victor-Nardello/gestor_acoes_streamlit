@@ -1,0 +1,28 @@
+[
+  {
+    "acao_id": "8984af41-ab6b-4309-9f34-5bfb33b718f6",
+    "nome_acao": "Ação - Estacionamento do DG",
+    "data_acao": "20-09-2025",
+    "local_acao": "Campo Grande",
+    "visitantes": [
+      {
+        "visitante_id": "20d41aed-4b30-472e-b2fc-39e086c6e91e",
+        "data_hora_registro": "2025-09-23T17:30:48",
+        "equipe_responsavel": "Imobiliária Agora Eu Mudo",
+        "origem_visitante": "Viu a ação e veio ver",
+        "quantidade_pessoas": 1,
+        "observacoes_visitante": "Cliente fechou contrato com a Brendha no dia 21/09/2025 após ver ação pessoalmente e se interessar",
+        "status_contrato": "contrato_por_acao"
+      },
+      {
+        "visitante_id": "403079e9-1f03-426d-858f-24cd700fcf3a",
+        "data_hora_registro": "2025-09-23T17:47:00",
+        "equipe_responsavel": "",
+        "origem_visitante": "",
+        "quantidade_pessoas": 0,
+        "observacoes_visitante": "",
+        "status_contrato": ""
+      }
+    ]
+  }
+]
