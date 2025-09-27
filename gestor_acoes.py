@@ -4,7 +4,6 @@ import uuid
 from datetime import datetime
 import streamlit as st
 import pandas as pd
-import streamlit.components.v1 as components
 
 DATA_FILE = "actions_data.json"
 
@@ -38,20 +37,20 @@ st.markdown(
     /* Background geral da página */
     .stApp {
         background-color: #FFFFFF;
-        color: #FFFFFF;
+        color: #000000;
         font-family: 'Arial', sans-serif;
     }
 
     /* Cabeçalhos */
     h1, h2, h3, h4, h5, h6 {
-        color: #FFFFFF;
+        color: #000000;
         font-weight: 600;
         margin-bottom: 10px;
     }
 
     /* Rótulos dos campos */
     label, .stTextInput label, .stNumberInput label, .stTextArea label, .stSelectbox label {
-        color: #FFFFFF !important;
+        color: #000000 !important;
         font-size: 16px;
         font-weight: 500;
     }
@@ -61,7 +60,7 @@ st.markdown(
     div.stNumberInput > div > input,
     div.stTextArea > div > textarea,
     div.stSelectbox > div > div > div > select {
-        background-color: #1A1A1A;
+        background-color: #FFFFFF;
         color: #000000;
         border: 2px solid #FF0000;
         border-radius: 5px;
@@ -73,7 +72,7 @@ st.markdown(
     div.stTextInput > div > input::placeholder,
     div.stNumberInput > div > input::placeholder,
     div.stTextArea > div > textarea::placeholder {
-        color: #BBBBBB;
+        color: #666666;
         opacity: 1;
     }
 
@@ -92,13 +91,13 @@ st.markdown(
     /* Hover nos botões */
     div.stButton > button:hover {
         background-color: #CC0000;
-        box-shadow: 0 2px 5px rgba(255, 0, 0, 0.3);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
     /* Dataframes */
     .stDataFrame table {
-        background-color: #1A1A1A;
-        color: #FFFFFF;
+        background-color: #FFFFFF;
+        color: #000000;
         border-collapse: collapse;
         border-radius: 5px;
         overflow: hidden;
@@ -106,7 +105,7 @@ st.markdown(
     .stDataFrame th, .stDataFrame td {
         border: 1px solid #FF0000;
         padding: 10px;
-        color: #FFFFFF;
+        color: #000000;
     }
     .stDataFrame th {
         background-color: #FF0000;
@@ -116,12 +115,12 @@ st.markdown(
 
     /* Selectbox */
     .stSelectbox > div > div > div > select {
-        background-color: #1A1A1A;
-        color: #FFFFFF;
+        background-color: #FFFFFF;
+        color: #000000;
     }
     .stSelectbox option {
-        background-color: #1A1A1A;
-        color: #FFFFFF;
+        background-color: #FFFFFF;
+        color: #000000;
     }
 
     /* Divisores */
@@ -133,7 +132,7 @@ st.markdown(
 
     /* Estilizar métricas */
     .stMetric label {
-        color: #FFFFFF;
+        color: #000000;
         font-size: 16px;
     }
     .stMetric .metric-value {
@@ -143,8 +142,8 @@ st.markdown(
 
     /* Estilizar alertas */
     .stAlert {
-        background-color: #1A1A1A;
-        color: #FFFFFF;
+        background-color: #FFFFFF;
+        color: #000000;
         border: 1px solid #FF0000;
         border-radius: 5px;
     }
@@ -279,215 +278,6 @@ if lista_de_acoes:
         st.warning(f"Atenção: {len(acoes_sem_visitantes)} ação(ões) sem visitantes cadastrados!")
     if visitantes_sem_contrato:
         st.warning(f"Atenção: {len(visitantes_sem_contrato)} visitante(s) sem contrato registrado!")
-
-st.markdown("---")
-
-# ---------------- Gráficos ----------------
-st.header("📊 Gráficos")
-if lista_de_acoes:
-    # Gráfico de barras: Visitantes por ação
-    nomes = [a["nome_acao"] for a in lista_de_acoes]
-    qtds = [len(a.get("visitantes", [])) for a in lista_de_acoes]
-    chart_data = {
-        "type": "bar",
-        "data": {
-            "labels": nomes,
-            "datasets": [{
-                "label": "Nº de Visitantes",
-                "data": qtds,
-                "backgroundColor": "#FF0000",
-                "borderColor": "#FFFFFF",
-                "borderWidth": 1
-            }]
-        },
-        "options": {
-            "scales": {
-                "y": {
-                    "beginAtZero": true,
-                    "title": {
-                        "display": true,
-                        "text": "Nº de Visitantes",
-                        "color": "#FFFFFF",
-                        "font": {"size": 14}
-                    },
-                    "ticks": {"color": "#FFFFFF"}
-                },
-                "x": {
-                    "title": {
-                        "display": true,
-                        "text": "Ações",
-                        "color": "#FFFFFF",
-                        "font": {"size": 14}
-                    },
-                    "ticks": {
-                        "color": "#FFFFFF",
-                        "maxRotation": 45,
-                        "minRotation": 45
-                    }
-                }
-            },
-            "plugins": {
-                "legend": {
-                    "labels": {
-                        "color": "#FFFFFF",
-                        "font": {"size": 14}
-                    }
-                },
-                "title": {
-                    "display": true,
-                    "text": "Visitantes por Ação",
-                    "color": "#FFFFFF",
-                    "font": {"size": 16}
-                }
-            }
-        }
-    }
-    components.html(f"""
-        <div style="background-color: #000000; padding: 20px; border-radius: 10px;">
-            <canvas id="barChart"></canvas>
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script>
-                const ctx = document.getElementById('barChart').getContext('2d');
-                new Chart(ctx, {json.dumps(chart_data)});
-            </script>
-        </div>
-    """, height=400)
-
-    # Gráfico de pizza: Status de contrato
-    if acao_selecionada:
-        acao_id = acoes_dict[acao_selecionada]
-        acao_alvo = next(a for a in lista_de_acoes if a["acao_id"] == acao_id)
-        visitantes = acao_alvo.get("visitantes", [])
-        if visitantes:
-            status = [v["status_contrato"] for v in visitantes]
-            labels = list(set(status))
-            counts = [status.count(l) for l in labels]
-            chart_data_pie = {
-                "type": "pie",
-                "data": {
-                    "labels": labels,
-                    "datasets": [{
-                        "data": counts,
-                        "backgroundColor": ["#FF0000", "#FFFFFF", "#BBBBBB"],
-                        "borderColor": "#000000",
-                        "borderWidth": 1
-                    }]
-                },
-                "options": {
-                    "plugins": {
-                        "legend": {
-                            "labels": {
-                                "color": "#FFFFFF",
-                                "font": {"size": 14}
-                            }
-                        },
-                        "title": {
-                            "display": true,
-                            "text": f"Status de Contrato - {acao_alvo['nome_acao']}",
-                            "color": "#FFFFFF",
-                            "font": {"size": 16}
-                        }
-                    }
-                }
-            }
-            components.html(f"""
-                <div style="background-color: #000000; padding: 20px; border-radius: 10px;">
-                    <canvas id="pieChart"></canvas>
-                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                    <script>
-                        const ctxPie = document.getElementById('pieChart').getContext('2d');
-                        new Chart(ctxPie, {json.dumps(chart_data_pie)});
-                    </script>
-                </div>
-            """, height=400)
-
-    # Gráfico de linha: Evolução temporal
-    st.subheader("📅 Evolução Temporal")
-    all_visits = []
-    for a in lista_de_acoes:
-        for v in a.get("visitantes", []):
-            all_visits.append({
-                "acao": a["nome_acao"],
-                "data": pd.to_datetime(v["data_hora_registro"]).strftime("%Y-%m-%d"),
-                "contrato": 1 if v["status_contrato"] != "nenhum_contrato" else 0
-            })
-    if all_visits:
-        df_time = pd.DataFrame(all_visits)
-        df_time.sort_values("data", inplace=True)
-        df_cum = df_time.groupby(["data", "acao"]).agg(
-            visitantes_cum=pd.NamedAgg(column="acao", aggfunc="count"),
-            contratos_cum=pd.NamedAgg(column="contrato", aggfunc="sum")
-        ).groupby(level=1).cumsum().reset_index()
-
-        datasets = []
-        for acao in df_cum["acao"].unique():
-            df_plot = df_cum[df_cum["acao"] == acao]
-            datasets.append({
-                "label": f"{acao} - Visitantes",
-                "data": df_plot["visitantes_cum"].tolist(),
-                "borderColor": "#FF0000",
-                "fill": False
-            })
-            datasets.append({
-                "label": f"{acao} - Contratos",
-                "data": df_plot["contratos_cum"].tolist(),
-                "borderColor": "#FFFFFF",
-                "fill": False
-            })
-        chart_data_line = {
-            "type": "line",
-            "data": {
-                "labels": df_cum["data"].unique().tolist(),
-                "datasets": datasets
-            },
-            "options": {
-                "scales": {
-                    "y": {
-                        "beginAtZero": true,
-                        "title": {
-                            "display": true,
-                            "text": "Cumulativo",
-                            "color": "#FFFFFF",
-                            "font": {"size": 14}
-                        },
-                        "ticks": {"color": "#FFFFFF"}
-                    },
-                    "x": {
-                        "title": {
-                            "display": true,
-                            "text": "Data",
-                            "color": "#FFFFFF",
-                            "font": {"size": 14}
-                        },
-                        "ticks": {"color": "#FFFFFF"}
-                    }
-                },
-                "plugins": {
-                    "legend": {
-                        "labels": {
-                            "color": "#FFFFFF",
-                            "font": {"size": 14}
-                        }
-                    },
-                    "title": {
-                        "display": true,
-                        "text": "Evolução de Visitantes e Contratos",
-                        "color": "#FFFFFF",
-                        "font": {"size": 16}
-                    }
-                }
-            }
-        }
-        components.html(f"""
-            <div style="background-color: #000000; padding: 20px; border-radius: 10px;">
-                <canvas id="lineChart"></canvas>
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script>
-                    const ctxLine = document.getElementById('lineChart').getContext('2d');
-                    new Chart(ctxLine, {json.dumps(chart_data_line)});
-                </script>
-            </div>
-        """, height=400)
 
 st.markdown("---")
 
