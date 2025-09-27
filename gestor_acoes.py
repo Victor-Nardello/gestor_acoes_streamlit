@@ -40,7 +40,7 @@ st.markdown(
     <style>
     /* Background geral da página */
     .stApp {
-        background-color: #000000;
+        background-color: #696969;
         color: #FFFFFF;
     }
 
