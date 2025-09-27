@@ -1,4 +1,4 @@
-# gestor_acoes_streamlit.py
+# gestor_acoes_streamlit_dark.py
 import json
 import os
 import uuid
@@ -6,6 +6,7 @@ from datetime import datetime
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 DATA_FILE = "actions_data.json"
 
@@ -20,6 +21,7 @@ def carregar_dados():
     return []
 
 def salvar_dados(lista_de_acoes):
+    # Backup automático
     if os.path.exists(DATA_FILE):
         backup_file = DATA_FILE.replace(".json", "_backup.json")
         try:
@@ -31,183 +33,214 @@ def salvar_dados(lista_de_acoes):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(lista_de_acoes, f, ensure_ascii=False, indent=2)
 
-# ---------------- Funções ----------------
-def adicionar_acao(lista_de_acoes, nome, data, local):
-    nova_acao = {
-        "acao_id": str(uuid.uuid4()),
-        "nome_acao": nome,
-        "data_acao": data,
-        "local_acao": local,
-        "visitantes": []
+# ---------------- Streamlit Config ----------------
+st.set_page_config(page_title="Gestor de Ações de Rua", layout="wide", page_icon="🏡")
+st.markdown(
+    """
+    <style>
+    body {
+        background-color: #000000;
+        color: #ffffff;
     }
-    lista_de_acoes.append(nova_acao)
-    salvar_dados(lista_de_acoes)
-    st.success("Ação adicionada!")
-
-def adicionar_visitante(lista_de_acoes, acao_id, equipe, origem, quantidade, status, observacoes):
-    visitante = {
-        "visitante_id": str(uuid.uuid4()),
-        "data_hora_registro": datetime.now().isoformat(timespec="seconds"),
-        "equipe_responsavel": equipe,
-        "origem_visitante": origem,
-        "quantidade_pessoas": quantidade,
-        "observacoes_visitante": observacoes,
-        "status_contrato": status
+    .stButton>button {
+        background-color: #ff0000;
+        color: #ffffff;
+        border-radius: 5px;
+        border: none;
+        padding: 0.5em 1em;
     }
-    for acao in lista_de_acoes:
-        if acao["acao_id"] == acao_id:
-            acao["visitantes"].append(visitante)
-            break
-    salvar_dados(lista_de_acoes)
-    st.success("Visitante adicionado!")
+    .stDataFrame table {
+        background-color: #000000;
+        color: #ffffff;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+st.title("🏡 Gestor de Ações de Rua - Imobiliária")
 
-def atualizar_visitante(lista_de_acoes, acao_id, visitante_id, equipe, origem, quantidade, status, observacoes):
-    for acao in lista_de_acoes:
-        if acao["acao_id"] == acao_id:
-            for v in acao["visitantes"]:
-                if v["visitante_id"] == visitante_id:
-                    v["equipe_responsavel"] = equipe
-                    v["origem_visitante"] = origem
-                    v["quantidade_pessoas"] = quantidade
-                    v["status_contrato"] = status
-                    v["observacoes_visitante"] = observacoes
-                    salvar_dados(lista_de_acoes)
-                    st.success("Visitante atualizado!")
-                    return
+lista_de_acoes = carregar_dados()
 
-def remover_visitante(lista_de_acoes, acao_id, visitante_id):
-    for acao in lista_de_acoes:
-        if acao["acao_id"] == acao_id:
-            acao["visitantes"] = [v for v in acao["visitantes"] if v["visitante_id"] != visitante_id]
+# ---------------- Aba Ações ----------------
+st.header("📌 Ações")
+with st.form("form_acao", clear_on_submit=True):
+    nome_acao = st.text_input("Nome da Ação")
+    data_acao = st.text_input("Data da Ação (YYYY-MM-DD)")
+    local_acao = st.text_input("Local da Ação")
+    submitted = st.form_submit_button("➕ Adicionar Ação")
+    if submitted:
+        if not nome_acao or not data_acao or not local_acao:
+            st.error("Preencha todos os campos da ação.")
+        else:
+            nova_acao = {
+                "acao_id": str(uuid.uuid4()),
+                "nome_acao": nome_acao,
+                "data_acao": data_acao,
+                "local_acao": local_acao,
+                "visitantes": []
+            }
+            lista_de_acoes.append(nova_acao)
             salvar_dados(lista_de_acoes)
-            st.success("Visitante removido!")
-            return
+            st.success("Ação adicionada com sucesso!")
 
-def exportar_csv(lista_de_acoes):
-    linhas = []
-    for acao in lista_de_acoes:
-        for v in acao.get("visitantes", []):
-            linhas.append({
-                "Ação": acao["nome_acao"],
-                "Data": acao["data_acao"],
-                "Local": acao["local_acao"],
+if lista_de_acoes:
+    df_acoes = pd.DataFrame([{
+        "Nome": a["nome_acao"],
+        "Data": a["data_acao"],
+        "Local": a["local_acao"],
+        "Visitantes": len(a.get("visitantes", []))
+    } for a in lista_de_acoes])
+    st.dataframe(df_acoes)
+
+# ---------------- Aba Visitantes ----------------
+st.header("🙋 Visitantes")
+acoes_dict = {f"{a['nome_acao']} — {a['data_acao']} ({a['local_acao']})": a["acao_id"] for a in lista_de_acoes}
+acao_selecionada = st.selectbox("Ação associada", options=list(acoes_dict.keys()) if acoes_dict else [])
+
+with st.form("form_visitante", clear_on_submit=True):
+    equipe_responsavel = st.text_input("Equipe Responsável")
+    origem_visitante = st.selectbox("Origem do Visitante", ["Folheto", "Folha impressa", "Agendamento", "Viu a ação e veio ver"])
+    quantidade_pessoas = st.number_input("Quantidade de Pessoas", min_value=0, step=1)
+    status_contrato = st.selectbox("Status do Contrato", ["nenhum_contrato", "contrato_por_acao", "contrato_fora_acao"])
+    observacoes = st.text_area("Observações")
+    submitted_v = st.form_submit_button("➕ Adicionar Visitante")
+    if submitted_v:
+        if not acao_selecionada:
+            st.warning("Selecione uma ação antes de adicionar visitantes.")
+        else:
+            acao_id = acoes_dict[acao_selecionada]
+            acao_alvo = next(a for a in lista_de_acoes if a["acao_id"] == acao_id)
+            visitante = {
+                "visitante_id": str(uuid.uuid4()),
+                "data_hora_registro": datetime.now().isoformat(timespec="seconds"),
+                "equipe_responsavel": equipe_responsavel,
+                "origem_visitante": origem_visitante,
+                "quantidade_pessoas": int(quantidade_pessoas),
+                "observacoes_visitante": observacoes,
+                "status_contrato": status_contrato
+            }
+            acao_alvo["visitantes"].append(visitante)
+            salvar_dados(lista_de_acoes)
+            st.success("Visitante adicionado com sucesso!")
+
+# Mostrar visitantes da ação selecionada
+if acao_selecionada:
+    acao_id = acoes_dict[acao_selecionada]
+    acao_alvo = next(a for a in lista_de_acoes if a["acao_id"] == acao_id)
+    visitantes = acao_alvo.get("visitantes", [])
+    if visitantes:
+        df_visitantes = pd.DataFrame([{
+            "Data/Hora": v["data_hora_registro"],
+            "Equipe": v["equipe_responsavel"],
+            "Origem": v["origem_visitante"],
+            "Qtd Pessoas": v["quantidade_pessoas"],
+            "Contrato": v["status_contrato"],
+            "Observações": v["observacoes_visitante"]
+        } for v in visitantes])
+        st.dataframe(df_visitantes)
+    else:
+        st.info("Nenhum visitante cadastrado para esta ação.")
+
+# ---------------- Resumo Geral ----------------
+st.header("📈 Resumo Geral")
+if lista_de_acoes:
+    total_visitantes = sum(len(a.get("visitantes", [])) for a in lista_de_acoes)
+    total_contratos = sum(
+        1 for a in lista_de_acoes for v in a.get("visitantes", [])
+        if v["status_contrato"] != "nenhum_contrato"
+    )
+    taxa_conversao = (total_contratos / total_visitantes * 100) if total_visitantes else 0
+
+    st.metric("Total de Visitantes", total_visitantes)
+    st.metric("Total de Contratos Fechados", total_contratos)
+    st.metric("Taxa de Conversão (%)", f"{taxa_conversao:.1f}")
+
+    # Alertas e destaques
+    acoes_sem_visitantes = [a for a in lista_de_acoes if not a.get("visitantes")]
+    visitantes_sem_contrato = [
+        (a["nome_acao"], v) for a in lista_de_acoes for v in a.get("visitantes", [])
+        if v["status_contrato"] == "nenhum_contrato"
+    ]
+
+    if acoes_sem_visitantes:
+        st.warning(f"Atenção: {len(acoes_sem_visitantes)} ação(ões) sem visitantes cadastrados!")
+    if visitantes_sem_contrato:
+        st.warning(f"Atenção: {len(visitantes_sem_contrato)} visitante(s) sem contrato registrado!")
+
+# ---------------- Gráficos ----------------
+st.header("📊 Gráficos")
+if lista_de_acoes:
+    # Visitantes por ação
+    nomes = [a["nome_acao"] for a in lista_de_acoes]
+    qtds = [len(a.get("visitantes", [])) for a in lista_de_acoes]
+    fig, ax = plt.subplots()
+    ax.bar(nomes, qtds, color='red')
+    ax.set_ylabel("Nº de Visitantes", color="white")
+    ax.set_xlabel("Ações", color="white")
+    ax.set_title("Visitantes por Ação", color="white")
+    ax.tick_params(axis='x', rotation=45, colors="white")
+    ax.tick_params(axis='y', colors="white")
+    st.pyplot(fig)
+
+    # Status de contrato da ação selecionada
+    if acao_selecionada and visitantes:
+        status = [v["status_contrato"] for v in visitantes]
+        labels = list(set(status))
+        counts = [status.count(l) for l in labels]
+        fig2, ax2 = plt.subplots()
+        ax2.pie(counts, labels=labels, autopct="%1.1f%%", startangle=140, colors=['#ff0000', '#ffffff', '#808080'])
+        ax2.set_title(f"Status de Contrato - {acao_alvo['nome_acao']}", color="white")
+        st.pyplot(fig2)
+
+    # Evolução temporal
+    st.subheader("📅 Evolução Temporal")
+    all_visits = []
+    for a in lista_de_acoes:
+        for v in a.get("visitantes", []):
+            all_visits.append({
+                "acao": a["nome_acao"],
+                "data": pd.to_datetime(v["data_hora_registro"]),
+                "contrato": 1 if v["status_contrato"] != "nenhum_contrato" else 0
+            })
+    if all_visits:
+        df_time = pd.DataFrame(all_visits)
+        df_time.sort_values("data", inplace=True)
+        df_cum = df_time.groupby(["data", "acao"]).agg(
+            visitantes_cum=pd.NamedAgg(column="acao", aggfunc="count"),
+            contratos_cum=pd.NamedAgg(column="contrato", aggfunc="sum")
+        ).groupby(level=1).cumsum().reset_index()
+
+        fig3, ax3 = plt.subplots()
+        for acao in df_cum["acao"].unique():
+            df_plot = df_cum[df_cum["acao"] == acao]
+            ax3.plot(df_plot["data"], df_plot["visitantes_cum"], label=f"{acao} - Visitantes", color="red")
+            ax3.plot(df_plot["data"], df_plot["contratos_cum"], label=f"{acao} - Contratos", color="white")
+        ax3.set_xlabel("Data", color="white")
+        ax3.set_ylabel("Cumulativo", color="white")
+        ax3.set_title("Evolução de Visitantes e Contratos", color="white")
+        ax3.legend()
+        ax3.tick_params(axis='x', colors="white")
+        ax3.tick_params(axis='y', colors="white")
+        st.pyplot(fig3)
+
+# ---------------- Export CSV ----------------
+if st.button("💾 Exportar CSV"):
+    all_rows = []
+    for a in lista_de_acoes:
+        for v in a.get("visitantes", []):
+            all_rows.append({
+                "Ação": a["nome_acao"],
+                "Data": a["data_acao"],
+                "Local": a["local_acao"],
                 "Equipe": v["equipe_responsavel"],
                 "Origem": v["origem_visitante"],
                 "Qtd Pessoas": v["quantidade_pessoas"],
                 "Status Contrato": v["status_contrato"],
                 "Observações": v["observacoes_visitante"]
             })
-    return pd.DataFrame(linhas)
-
-# ---------------- Streamlit ----------------
-st.set_page_config(page_title="Gestor de Ações de Rua", layout="wide")
-st.title("🏡 Gestor de Ações de Rua - Imobiliária")
-
-lista_de_acoes = carregar_dados()
-tabs = st.tabs(["📌 Ações", "🙋 Visitantes", "📊 Gráficos", "💾 Exportar CSV"])
-
-# ---------------- Aba Ações ----------------
-with tabs[0]:
-    st.subheader("Adicionar nova ação")
-    nome = st.text_input("Nome da Ação")
-    data = st.text_input("Data da Ação (YYYY-MM-DD)")
-    local = st.text_input("Local da Ação")
-    if st.button("➕ Adicionar Ação"):
-        if not nome or not data or not local:
-            st.warning("Preencha todos os campos.")
-        else:
-            adicionar_acao(lista_de_acoes, nome, data, local)
-
-    st.subheader("Lista de Ações")
-    if lista_de_acoes:
-        for acao in lista_de_acoes:
-            with st.expander(f"{acao['nome_acao']} — {acao['data_acao']} ({acao['local_acao']})"):
-                st.write(f"ID: {acao['acao_id']}")
-                st.write(f"Data: {acao['data_acao']}")
-                st.write(f"Local: {acao['local_acao']}")
-                if st.button(f"❌ Excluir Ação: {acao['nome_acao']}", key=acao['acao_id']):
-                    lista_de_acoes.remove(acao)
-                    salvar_dados(lista_de_acoes)
-                    st.experimental_rerun()
-
-# ---------------- Aba Visitantes ----------------
-with tabs[1]:
-    st.subheader("Adicionar visitante")
-    if lista_de_acoes:
-        acao_selecionada = st.selectbox("Ação associada", options=lista_de_acoes,
-                                        format_func=lambda x: f"{x['nome_acao']} — {x['data_acao']} ({x['local_acao']})")
-        equipe = st.text_input("Equipe Responsável")
-        origem = st.selectbox("Origem do Visitante", ["Folheto", "Folha impressa", "Agendamento", "Viu a ação e veio ver"])
-        quantidade = st.number_input("Quantidade de Pessoas", min_value=1, step=1)
-        status = st.selectbox("Status do Contrato", ["nenhum_contrato", "contrato_por_acao", "contrato_fora_acao"])
-        observacoes = st.text_area("Observações")
-        if st.button("➕ Adicionar Visitante"):
-            adicionar_visitante(lista_de_acoes, acao_selecionada['acao_id'], equipe, origem, quantidade, status, observacoes)
-
-    st.subheader("Visitantes")
-    for acao in lista_de_acoes:
-        for v in acao.get("visitantes", []):
-            with st.expander(f"{v['equipe_responsavel']} — {acao['nome_acao']}"):
-                st.write(f"Origem: {v['origem_visitante']}")
-                st.write(f"Qtd Pessoas: {v['quantidade_pessoas']}")
-                st.write(f"Status: {v['status_contrato']}")
-                st.write(f"Observações: {v['observacoes_visitante']}")
-                
-                equipe_edit = st.text_input("Equipe Responsável", value=v['equipe_responsavel'], key=v['visitante_id']+"_equipe")
-                origem_edit = st.selectbox("Origem do Visitante", ["Folheto", "Folha impressa", "Agendamento", "Viu a ação e veio ver"], index=["Folheto", "Folha impressa", "Agendamento", "Viu a ação e veio ver"].index(v['origem_visitante']), key=v['visitante_id']+"_origem")
-                quantidade_edit = st.number_input("Qtd Pessoas", min_value=1, value=v['quantidade_pessoas'], key=v['visitante_id']+"_qtd")
-                status_edit = st.selectbox("Status do Contrato", ["nenhum_contrato", "contrato_por_acao", "contrato_fora_acao"], index=["nenhum_contrato", "contrato_por_acao", "contrato_fora_acao"].index(v['status_contrato']), key=v['visitante_id']+"_status")
-                observacoes_edit = st.text_area("Observações", value=v['observacoes_visitante'], key=v['visitante_id']+"_obs")
-
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button("💾 Salvar Alterações", key=v['visitante_id']+"_salvar"):
-                        atualizar_visitante(lista_de_acoes, acao['acao_id'], v['visitante_id'],
-                                           equipe_edit, origem_edit, quantidade_edit, status_edit, observacoes_edit)
-                        st.experimental_rerun()
-                with col2:
-                    if st.button("❌ Remover Visitante", key=v['visitante_id']+"_remover"):
-                        remover_visitante(lista_de_acoes, acao['acao_id'], v['visitante_id'])
-                        st.experimental_rerun()
-
-# ---------------- Aba Gráficos ----------------
-with tabs[2]:
-    st.subheader("Gráfico de Visitantes por Ação")
-    nomes = [a["nome_acao"] for a in lista_de_acoes]
-    qtds = [len(a.get("visitantes", [])) for a in lista_de_acoes]
-    if nomes:
-        fig, ax = plt.subplots()
-        ax.bar(nomes, qtds, color='skyblue')
-        ax.set_ylabel("Nº de Visitantes")
-        ax.set_xlabel("Ações")
-        ax.set_title("Visitantes por Ação")
-        plt.xticks(rotation=45, ha='right')
-        st.pyplot(fig)
+    if all_rows:
+        df_all = pd.DataFrame(all_rows)
+        df_all.to_csv("export_visitantes.csv", index=False, encoding="utf-8")
+        st.success("Arquivo CSV exportado como 'export_visitantes.csv'.")
     else:
-        st.info("Nenhuma ação para exibir gráfico.")
-
-    st.subheader("Gráfico de Status de Contrato por Ação")
-    if lista_de_acoes:
-        acao_selecionada_graf = st.selectbox("Selecione uma ação", lista_de_acoes,
-                                             format_func=lambda x: f"{x['nome_acao']} — {x['data_acao']} ({x['local_acao']})", key="graf")
-        status = [v["status_contrato"] for v in acao_selecionada_graf.get("visitantes", [])]
-        if status:
-            labels = list(set(status))
-            counts = [status.count(l) for l in labels]
-            fig2, ax2 = plt.subplots()
-            ax2.pie(counts, labels=labels, autopct="%1.1f%%", startangle=140)
-            ax2.set_title(f"Status de Contrato - {acao_selecionada_graf['nome_acao']}")
-            st.pyplot(fig2)
-        else:
-            st.info("Nenhum visitante nesta ação para gráfico.")
-
-# ---------------- Aba Exportar CSV ----------------
-with tabs[3]:
-    st.subheader("Exportar CSV")
-    df_export = exportar_csv(lista_de_acoes)
-    if not df_export.empty:
-        st.dataframe(df_export)
-        csv_data = df_export.to_csv(index=False).encode('utf-8')
-        st.download_button("💾 Baixar CSV", data=csv_data, file_name="visitantes.csv", mime="text/csv")
-    else:
-        st.info("Nenhum dado para exportar.")
+        st.info("Não há dados para exportar.")

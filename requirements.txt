@@ -1,6 +1,5 @@
-ttkbootstrap==1.14.2
-matplotlib==3.7.2
 streamlit==1.29.0
-pandas==2.1.0
-plotly==5.17.0
+pandas==1.5.3
+matplotlib==3.6.3
+plotly==5.15.0
 openpyxl==3.1.2
