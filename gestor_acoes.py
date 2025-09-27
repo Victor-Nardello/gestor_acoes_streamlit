@@ -163,7 +163,7 @@ col1, col2 = st.columns([2, 1])
 with col1:
     with st.form("form_acao", clear_on_submit=True):
         nome_acao = st.text_input("Nome da Ação")
-        data_acao = st.text_input("Data da Ação (YYYY-MM-DD)")
+        data_acao = st.text_input("Data da Ação (DD-MM-YYYY)")
         local_acao = st.text_input("Local da Ação")
         bairro_cidade = st.text_input("Bairro ou Cidade")
         cartinhas_distribuidas = st.number_input("Cartinhas Distribuídas", min_value=0, step=1)
@@ -187,7 +187,7 @@ with col1:
                     salvar_dados(lista_de_acoes)
                     st.success("Ação adicionada com sucesso!")
                 except ValueError:
-                    st.error("Formato de data inválido. Use YYYY-MM-DD (ex.: 2025-09-27).")
+                    st.error("Formato de data inválido. Use DD-MM-YYYY (ex.: 2025-09-27).")
 
 with col2:
     st.markdown("### Lista de Ações")
